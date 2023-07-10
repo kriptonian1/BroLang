@@ -34,3 +34,29 @@ const (
 	FUNCTION = "FUNCTION"
 	LET      = "LET"
 )
+
+// Keywords map
+var keywords = map[string]TokenType{
+	"fn":  FUNCTION,
+	"let": LET,
+}
+
+/*
+LookupIdent function takes an identifier and checks if it is a keyword.
+If it is a keyword, it returns the keyword's TokenType constant.
+If it is not a keyword, it returns the token.IDENT constant.
+We use this function when we encounter an identifier in the input.
+
+For example, if we encounter the identifier let, we check if it is a keyword.
+If it is, we return the token.LET constant. If it is not, we return the token.IDENT constant.
+
+@params ident string
+
+@return TokenType constant or token.IDENT constant (string)
+*/
+func LookupIdent(ident string) TokenType {
+	if tok, ok := keywords[ident]; ok {
+		return tok
+	}
+	return IDENT
+}

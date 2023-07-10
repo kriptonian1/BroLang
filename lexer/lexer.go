@@ -38,6 +38,8 @@ func (l *Lexer) readChar() {
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 
+	l.skipWhitespace() // Skip the whitespace
+
 	switch l.ch {
 	case '=':
 		tok = newToken(token.ASSIGN, l.ch)
@@ -61,7 +63,12 @@ func (l *Lexer) NextToken() token.Token {
 
 	default:
 		if isLetter(l.ch) {
-			tok.Literal = l.readIdentifier() // Read the identifier
+			tok.Literal = l.readIdentifier()          // Read the identifier
+			tok.Type = token.LookupIdent(tok.Literal) // Lookup the identifier in the keywords table
+			return tok
+		} else if isDigit(l.ch) {
+			tok.Literal = l.readNumber() // Read the number
+			tok.Type = token.INT
 			return tok
 		} else {
 			tok = newToken(token.ILLEGAL, l.ch)
@@ -93,6 +100,15 @@ func (l *Lexer) readIdentifier() string {
 	return l.input[position:l.position] // Return the identifier
 }
 
+// readNumber reads a number and advances the position until it encounters a non-digit character
+func (l *Lexer) readNumber() string {
+	position := l.position // Save the current position
+	for isDigit(l.ch) {
+		l.readChar() // Read the next character
+	}
+	return l.input[position:l.position] // Return the number
+}
+
 /*
 isLetter checks if a character is a letter
 
@@ -102,4 +118,24 @@ isLetter checks if a character is a letter
 */
 func isLetter(ch byte) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
+}
+
+/*
+isDigit checks if a character is a digit
+
+@param ch byte - Character to be checked
+
+@return bool - True if the character is a digit, false otherwise
+*/
+func isDigit(ch byte) bool {
+	return '0' <= ch && ch <= '9'
+}
+
+/*
+skipWhitespace skips whitespace characters (e.g. space, tab, newline, etc.)
+*/
+func (l *Lexer) skipWhitespace() {
+	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' { // Skip whitespace
+		l.readChar()
+	}
 }
