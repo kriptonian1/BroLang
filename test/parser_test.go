@@ -62,7 +62,6 @@ return 993322;
 		t.Fatalf("program.Statements does not contain 3 statements. got=%d", len(program.Statements))
 	}
 
-
 	for _, stmt := range program.Statements { // Loops through the statements
 		returnStmt, ok := stmt.(*ast.ReturnStatement) // Type assertion
 
