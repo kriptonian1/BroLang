@@ -4,9 +4,20 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/kriptonian1/BroLang/ast"
-	"github.com/kriptonian1/BroLang/lexer"
-	"github.com/kriptonian1/BroLang/token"
+	"github.com/kriptonian1/BroLang/src/ast"
+	"github.com/kriptonian1/BroLang/src/lexer"
+	"github.com/kriptonian1/BroLang/src/token"
+)
+
+const (
+	_ int = iota
+	LOWEST
+	EQUALS      // ==
+	LESSGREATER // > or <
+	SUM         // +
+	PRODUCT     // *
+	PREFIX      // -X or !X
+	CALL        // myFunction(X)
 )
 
 type Parser struct {
@@ -15,7 +26,15 @@ type Parser struct {
 	curToken  token.Token // Current token
 	peekToken token.Token // Next token
 	errors    []error     // Errors
+
+	prefixParseFns map[token.TokenType]prefixParseFn // Prefix parse functions
+	infixParseFns  map[token.TokenType]infixParseFn  // Infix parse functions
 }
+
+type (
+	prefixParseFn func() ast.Expression               // Prefix parse function
+	infixParseFn  func(ast.Expression) ast.Expression // Infix parse function
+)
 
 func New(l *lexer.Lexer) *Parser { // Creates a new parser
 	p := &Parser{
@@ -23,11 +42,22 @@ func New(l *lexer.Lexer) *Parser { // Creates a new parser
 		errors: []error{},
 	}
 
+	p.prefixParseFns = make(map[token.TokenType]prefixParseFn) // Creates a new map of prefix parse functions
+	p.registerPrefix(token.IDENT, p.parseIdentifier)           // Registers the identifier parse function to the map of prefix parse functions
+
 	// Read two tokens so curToken and peekToken are both set
 	p.nextToken()
 	p.nextToken()
 
 	return p
+}
+
+/*
+It creates a new identifier expression and sets the token to the current token.
+It sets the value to the literal value of the token. It returns the identifier expression.
+*/
+func (p *Parser) parseIdentifier() ast.Expression {
+	return &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 }
 
 func (p *Parser) Errors() []error { // Returns the errors
@@ -61,7 +91,7 @@ func (p *Parser) parseStatement() ast.Statement { // Parses the statement
 	case token.RETURN: // If the token is a return token
 		return p.parseReturnStatement() // Parses the return statement
 	default:
-		return nil
+		return p.parseExpressionStatement()
 	}
 }
 
@@ -122,4 +152,30 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 		p.peekError(t)
 		return false
 	}
+}
+
+func (p *Parser) registerPrefix(tokenType token.TokenType, fn prefixParseFn) {
+	p.prefixParseFns[tokenType] = fn
+}
+func (p *Parser) registerInfix(tokenType token.TokenType, fn infixParseFn) {
+	p.infixParseFns[tokenType] = fn
+}
+
+// Parses the expression statement (e.g. 5 + 5;)
+func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
+	stmt := &ast.ExpressionStatement{Token: p.curToken}
+	stmt.Expression = p.parseExpression(LOWEST)
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+	return stmt
+}
+
+func (p *Parser) parseExpression(precedence int) ast.Expression {
+	prefix := p.prefixParseFns[p.curToken.Type]
+	if prefix == nil {
+		return nil
+	}
+	leftExp := prefix()
+	return leftExp
 }

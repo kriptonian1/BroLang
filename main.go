@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/user"
 
-	"github.com/kriptonian1/BroLang/repl"
+	"github.com/kriptonian1/BroLang/src/repl"
 )
 
 func init() {

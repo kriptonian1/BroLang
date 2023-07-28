@@ -3,8 +3,8 @@ package test
 import (
 	"testing"
 
-	"github.com/kriptonian1/BroLang/ast"
-	"github.com/kriptonian1/BroLang/token"
+	"github.com/kriptonian1/BroLang/src/ast"
+	"github.com/kriptonian1/BroLang/src/token"
 )
 
 func TestString(t *testing.T) {

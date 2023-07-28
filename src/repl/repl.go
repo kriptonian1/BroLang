@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/kriptonian1/BroLang/lexer"
-	"github.com/kriptonian1/BroLang/token"
+	"github.com/kriptonian1/BroLang/src/lexer"
+	"github.com/kriptonian1/BroLang/src/token"
 )
 
 const PROMPT = "✨ >> "

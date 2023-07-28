@@ -1,6 +1,6 @@
 package lexer
 
-import "github.com/kriptonian1/BroLang/token"
+import "github.com/kriptonian1/BroLang/src/token"
 
 type Lexer struct {
 	input        string // Input to be tokenized

@@ -3,7 +3,7 @@ package ast
 import (
 	"bytes"
 
-	"github.com/kriptonian1/BroLang/token"
+	"github.com/kriptonian1/BroLang/src/token"
 )
 
 // The AST is the abstract syntax tree. It is the data structure that the parser produces.

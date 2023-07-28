@@ -3,9 +3,9 @@ package test
 import (
 	"testing"
 
-	"github.com/kriptonian1/BroLang/ast"
-	"github.com/kriptonian1/BroLang/lexer"
-	"github.com/kriptonian1/BroLang/parser"
+	"github.com/kriptonian1/BroLang/src/ast"
+	"github.com/kriptonian1/BroLang/src/lexer"
+	"github.com/kriptonian1/BroLang/src/parser"
 )
 
 func TestLetStatements(t *testing.T) {
@@ -72,6 +72,37 @@ return 993322;
 		if returnStmt.TokenLiteral() != "return" { // Checks if the token literal is correct
 			t.Errorf("returnStmt.TokenLiteral not 'return', got %q", returnStmt.TokenLiteral())
 		}
+	}
+}
+
+func TestIdentifierExpression(t *testing.T) {
+	input := "foobar;"
+	l := lexer.New(input)
+	p := parser.New(l)
+
+	program := p.ParseProgram() // Parses the program from the input string to an AST
+	checkParserErrors(t, p)     // Checks for parser errors
+
+	if len(program.Statements) != 1 { // Checks if the program has 1 statement
+		t.Fatalf("program has not enough statements. got=%d", len(program.Statements))
+	}
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement) // Type assertion
+
+	if !ok { // Checks if the statement is an expression statement
+		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T", program.Statements[0])
+	}
+
+	ident, ok := stmt.Expression.(*ast.Identifier) // Type assertion
+
+	if !ok { // Checks if the expression is an identifier
+		t.Fatalf("exp not *ast.Identifier. got=%T", stmt.Expression)
+	}
+	if ident.Value != "foobar" { // Checks if the value of the identifier is correct
+		t.Errorf("ident.Value not %s. got=%s", "foobar", ident.Value)
+	}
+	if ident.TokenLiteral() != "foobar" { // Checks if the token literal of the identifier is correct
+		t.Errorf("ident.TokenLiteral not %s. got=%s", "foobar", ident.TokenLiteral())
 	}
 }
 
